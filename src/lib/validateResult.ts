@@ -25,7 +25,10 @@ const hasUniqueStrings = (values: string[]) =>
 
 export function parseAndValidateResult(raw: string): StudyResult {
   if (!raw.trim()) {
-    throw new ResultValidationError('empty', 'The AI returned an empty response.')
+    throw new ResultValidationError(
+      'empty',
+      'The AI returned an empty response.'
+    )
   }
 
   let data: unknown
@@ -33,18 +36,37 @@ export function parseAndValidateResult(raw: string): StudyResult {
   try {
     data = JSON.parse(raw)
   } catch {
-    throw new ResultValidationError('malformed', 'The AI returned malformed JSON.')
+    throw new ResultValidationError(
+      'malformed',
+      'The AI returned malformed JSON.'
+    )
   }
 
   if (
     !isRecord(data) ||
-    !hasKeys(data, ['title', 'summary', 'flashcards', 'quiz', 'checklist', 'chart'])
+    !hasKeys(data, [
+      'title',
+      'summary',
+      'flashcards',
+      'quiz',
+      'checklist',
+      'chart'
+    ])
   ) {
-    throw new ResultValidationError('wrong-shape', 'The AI response did not match the expected structure.')
+    throw new ResultValidationError(
+      'wrong-shape',
+      'The AI response did not match the expected structure.'
+    )
   }
 
-  if (!isNonEmptyString(data.title) || !isNonEmptyString(data.summary)) {
-    throw new ResultValidationError('wrong-shape', 'The AI response had invalid title or summary fields.')
+  if (
+    !isNonEmptyString(data.title) ||
+    !isNonEmptyString(data.summary)
+  ) {
+    throw new ResultValidationError(
+      'wrong-shape',
+      'The AI response had invalid title or summary fields.'
+    )
   }
 
   const flashcards = data.flashcards
@@ -64,7 +86,10 @@ export function parseAndValidateResult(raw: string): StudyResult {
         isNonEmptyString(item.answer)
     )
   ) {
-    throw new ResultValidationError('wrong-shape', 'The flashcard structure was invalid.')
+    throw new ResultValidationError(
+      'wrong-shape',
+      'The flashcard structure was invalid.'
+    )
   }
 
   if (
@@ -73,7 +98,13 @@ export function parseAndValidateResult(raw: string): StudyResult {
     !quiz.every(item => {
       if (
         !isRecord(item) ||
-        !hasKeys(item, ['id', 'question', 'options', 'correctIndex', 'explanation']) ||
+        !hasKeys(item, [
+          'id',
+          'question',
+          'options',
+          'correctIndex',
+          'explanation'
+        ]) ||
         !isNonEmptyString(item.id) ||
         !isNonEmptyString(item.question) ||
         !Array.isArray(item.options) ||
@@ -86,10 +117,17 @@ export function parseAndValidateResult(raw: string): StudyResult {
       }
 
       const correctIndex = Number(item.correctIndex)
-      return correctIndex >= 0 && correctIndex < item.options.length
+
+      return (
+        correctIndex >= 0 &&
+        correctIndex < item.options.length
+      )
     })
   ) {
-    throw new ResultValidationError('wrong-shape', 'The quiz structure was invalid.')
+    throw new ResultValidationError(
+      'wrong-shape',
+      'The quiz structure was invalid.'
+    )
   }
 
   if (
@@ -103,7 +141,10 @@ export function parseAndValidateResult(raw: string): StudyResult {
         isNonEmptyString(item.label)
     )
   ) {
-    throw new ResultValidationError('wrong-shape', 'The checklist structure was invalid.')
+    throw new ResultValidationError(
+      'wrong-shape',
+      'The checklist structure was invalid.'
+    )
   }
 
   if (
@@ -121,7 +162,10 @@ export function parseAndValidateResult(raw: string): StudyResult {
         Number.isFinite(item.value)
     )
   ) {
-    throw new ResultValidationError('wrong-shape', 'The chart structure was invalid.')
+    throw new ResultValidationError(
+      'wrong-shape',
+      'The chart structure was invalid.'
+    )
   }
 
   const ids = [
@@ -131,7 +175,10 @@ export function parseAndValidateResult(raw: string): StudyResult {
   ]
 
   if (!hasUniqueStrings(ids)) {
-    throw new ResultValidationError('wrong-shape', 'The AI returned duplicate item IDs.')
+    throw new ResultValidationError(
+      'wrong-shape',
+      'The AI returned duplicate item IDs.'
+    )
   }
 
   return data as StudyResult
